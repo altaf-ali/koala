@@ -7,6 +7,8 @@ import utils.results
 import utils.logger
 
 class GenericTask(utils.logger.GenericLogger, luigi.Task):
+    RESULTS_FOLDER = "results"
+
     pipeline = luigi.Parameter(default=None)
 
     def __init__(self, *args, **kwargs):
@@ -16,8 +18,11 @@ class GenericTask(utils.logger.GenericLogger, luigi.Task):
         if not self.pipeline:
             self.pipeline = self
 
-        self.results_folder = utils.results.Results.results_folder(self.pipeline.task_family)
-        self.results = utils.results.Results(self, self.results_folder)
+        self.results = utils.results.Results(self)
+
+    @property
+    def results_folder(self):
+        return os.path.join(os.getcwd(), GenericTask.RESULTS_FOLDER, self.pipeline.task_family)
 
     def clean(self):
         map(lambda d: d.clean(), self.deps())

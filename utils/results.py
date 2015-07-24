@@ -5,21 +5,17 @@ import os
 import luigi
 
 class Results(dict):
-    RESULTS_FOLDER = "results"
-
-    @staticmethod
-    def results_folder(subfolder):
-        return os.path.join(os.getcwd(), Results.RESULTS_FOLDER, subfolder)
-
-    def __init__(self, task, results_folder):
+    def __init__(self, task):
+        self.pipeline = task.pipeline
         self.task_id = task.task_id
         self.task_family = task.task_family
         filename = "%s.json" % (self.task_family)
-        self.target = luigi.LocalTarget(os.path.join(results_folder, filename))
+        self.target = luigi.LocalTarget(os.path.join(self.pipeline.results_folder, filename))
         super(Results, self).__init__()
 
     def save(self, status):
         header = {
+            'pipeline': self.pipeline.task_family,
             'task_id': self.task_id,
             'task_family': self.task_family,
             'timestamp': datetime.datetime.now().isoformat(),
