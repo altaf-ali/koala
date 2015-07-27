@@ -1,4 +1,3 @@
-import logging
 import os
 
 import luigi
@@ -7,22 +6,21 @@ import utils.results
 import utils.logger
 
 class GenericTask(utils.logger.GenericLogger, luigi.Task):
-    RESULTS_FOLDER = "results"
-
-    pipeline = luigi.Parameter(default=None)
+    pipeline = luigi.Parameter()
 
     def __init__(self, *args, **kwargs):
         super(GenericTask, self).__init__(*args, **kwargs)
 
-        # for top-level pipelines
-        if not self.pipeline:
-            self.pipeline = self
+        # make sure pipline is actually a Pipline object
+        from tasks.pipeline import Pipeline
+        if not isinstance(self.pipeline, Pipeline):
+            raise TypeError("unexpected type %s, expecting %s" % (type(self.pipeline), type(Pipeline)))
 
         self.results = utils.results.Results(self)
 
     @property
     def results_folder(self):
-        return os.path.join(os.getcwd(), GenericTask.RESULTS_FOLDER, self.pipeline.task_family)
+        return self.pipeline.results_folder
 
     def clean(self):
         map(lambda d: d.clean(), self.deps())
@@ -31,6 +29,14 @@ class GenericTask(utils.logger.GenericLogger, luigi.Task):
         if self.output() and os.path.isfile(self.output().fn):
             self.logger.debug("removing " + self.output().fn)
             self.output().remove()
+
+    def complete(self):
+        #for dep in self.deps():
+        #    if not dep.complete():
+        #        return False
+        if not all(map(lambda dep: dep.complete(), self.deps())):
+            return False
+        return super(GenericTask, self).complete()
 
     def output(self):
         return self.results.target

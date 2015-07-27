@@ -43,13 +43,13 @@ class HttpDownload(utils.logger.GenericLogger, luigi.Task):
     def complete(self):
         if self.output().exists() and self.compare_checksum():
             return luigi.Task.complete(self)
-        else:
-            return False
+        return False
 
     def output(self):
         return luigi.LocalTarget(self.target)
 
     def download(self):
+        print("====== downloading %s from %s" % (self.output().fn, self.url))
         self.logger.debug("downloading %s from %s" % (self.output().fn, self.url))
 
         content_length = 0
