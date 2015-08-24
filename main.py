@@ -5,28 +5,6 @@ from tasks.generic import GenericTask
 
 from pipelines.dataset_collector import DatasetCollectorPipeline
 
-class TestTask(GenericTask):
-    def run(self):
-        print "running ", self.task_family
-
-class Task_A(TestTask):
-    def requires(self):
-        return Task_B(self.pipeline)
-
-class Task_B(TestTask):
-    def requires(self):
-        return Task_C(self.pipeline)
-
-class Task_C(TestTask):
-    pass
-
-class Test_Pipeline(Pipeline):
-    def complete(self):
-        return super(Test_Pipeline, self).complete()
-
-    def requires(self):
-        return Task_A(pipeline=self)
-
 class Main(Pipeline):
     def requires(self):
         pipelines = [
