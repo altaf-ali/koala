@@ -3,7 +3,7 @@ import luigi
 from tasks.pipeline import Pipeline
 from tasks.generic import GenericTask
 
-from pipelines.escalation import EscalationPipeline
+from pipelines.dataset_collector import DatasetCollectorPipeline
 
 class TestTask(GenericTask):
     def run(self):
@@ -22,7 +22,6 @@ class Task_C(TestTask):
 
 class Test_Pipeline(Pipeline):
     def complete(self):
-        print "in Test_Pipeline.complete()"
         return super(Test_Pipeline, self).complete()
 
     def requires(self):
@@ -31,7 +30,7 @@ class Test_Pipeline(Pipeline):
 class Main(Pipeline):
     def requires(self):
         pipelines = [
-            EscalationPipeline()
+            DatasetCollectorPipeline()
         ]
         return pipelines
 

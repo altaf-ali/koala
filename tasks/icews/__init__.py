@@ -1,1 +1,1 @@
-from icews import MothlyAggregator
+from icews import DatasetCollector

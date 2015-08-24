@@ -1,20 +1,50 @@
 import os
+import json
+import importlib
 
 import luigi
 
 import utils.results
 import utils.logger
 
+class PipelineParameter(luigi.Parameter):
+    """
+    A parameter whose value is a ``pipeline``.
+    """
+
+    def parse(self, s):
+        """
+        Parses a string to a dictionary.
+        """
+        data = json.loads(s)
+        class_ = getattr(importlib.import_module(data["module_name"]), data["class_name"])
+        instance = class_()
+
+        return instance
+
+    def serialize(self, d):
+        """
+        Converts the parameter to string.
+        """
+
+        data = {
+            "module_name": d.__module__,
+            "class_name": d.__class__.__name__,
+            "params": d.get_params()
+        }
+        return json.dumps(data)
+
+
 class GenericTask(utils.logger.GenericLogger, luigi.Task):
-    pipeline = luigi.Parameter()
+    pipeline = PipelineParameter()
 
     def __init__(self, *args, **kwargs):
         super(GenericTask, self).__init__(*args, **kwargs)
 
         # make sure pipline is actually a Pipline object
         from tasks.pipeline import Pipeline
-        if not isinstance(self.pipeline, Pipeline):
-            raise TypeError("unexpected type %s, expecting %s" % (type(self.pipeline), type(Pipeline)))
+#        if not isinstance(self.pipeline, Pipeline):
+#            raise TypeError("unexpected type %s (value=%s), expecting %s" % (type(self.pipeline), self.pipeline, type(Pipeline)))
 
         self.results = utils.results.Results(self)
 
@@ -27,7 +57,7 @@ class GenericTask(utils.logger.GenericLogger, luigi.Task):
 
         # make sure it's a file and NOT a directory
         if self.output() and os.path.isfile(self.output().fn):
-            self.logger.debug("removing " + self.output().fn)
+            self.logger.debug("Removing " + self.output().fn)
             self.output().remove()
 
     def complete(self):
@@ -45,4 +75,5 @@ class GenericTask(utils.logger.GenericLogger, luigi.Task):
         self.results.update(data)
 
     def on_success(self):
+        self.logger.debug("Task succeeded. Updating results")
         self.results.save('SUCCESS')

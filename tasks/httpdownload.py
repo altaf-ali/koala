@@ -37,7 +37,7 @@ class HttpDownload(utils.logger.GenericLogger, luigi.Task):
     def compare_checksum(self):
         result = self.checksum == utils.md5.file_checksum(self.target, hex=True)
         if not result:
-            self.logger.warn("checksum mismatch, file=%s" % self.target)
+            self.logger.warn("Checksum mismatch, file=%s" % self.target)
         return result
 
     def complete(self):
@@ -49,8 +49,7 @@ class HttpDownload(utils.logger.GenericLogger, luigi.Task):
         return luigi.LocalTarget(self.target)
 
     def download(self):
-        print("====== downloading %s from %s" % (self.output().fn, self.url))
-        self.logger.debug("downloading %s from %s" % (self.output().fn, self.url))
+        self.logger.debug("Downloading %s from %s" % (self.output().fn, self.url))
 
         content_length = 0
         with closing(requests.get(self.url, stream=True, timeout=self.timeout)) as r, self.output().open("w") as f:
@@ -63,7 +62,7 @@ class HttpDownload(utils.logger.GenericLogger, luigi.Task):
 
         target_size = os.path.getsize(self.target)
 
-        self.logger.debug("download completed, %d of %d, target=%s" % (target_size, content_length, self.target))
+        self.logger.debug("Download completed, %d of %d, target = %s" % (target_size, content_length, self.target))
         if not self.compare_checksum():
             raise HttpDownload.ChecksumError(self.url, self.target)
 

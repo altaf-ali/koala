@@ -1,4 +1,8 @@
 import os
+import luigi
+
+import pickle
+
 from tasks.generic import GenericTask
 
 class Pipeline(GenericTask):
@@ -13,4 +17,5 @@ class Pipeline(GenericTask):
     @property
     def results_folder(self):
         return os.path.join(os.getcwd(), Pipeline.RESULTS_FOLDER, self.task_family)
+
 
